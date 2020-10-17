@@ -8,7 +8,7 @@ Using the sample file to query prices:
 
 ```
 $ lein uberjar
-$ java -jar target/b3-cotahist.jar -f resources/DemoCotacoesHistoricas12022003.txt -t UBBR4T -t VALE5 -d 2003-02-12| jq
+$ java -jar target/b3-cotahist.jar -f resources/DemoCotacoesHistoricas12022003.txt -t UBBR4T -t VALE5T -d 2003-02-12| jq
 [
   {
     "ticket": "UBBR4T",
@@ -32,6 +32,9 @@ Generating [hledger](https://github.com/simonmichael/hledger) compatible price d
 ```
 java -jar target/b3-cotahist.jar -f resources/DemoCotacoesHistoricas12022003.txt | jq -r '.[] | "P \(.date) \"\(.ticket)\" \(.price_close)"'
 ```
+
+Running tests:
+`lein test`
 
 ## Similars
 - https://github.com/diogolr/b3parser
