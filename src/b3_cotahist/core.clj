@@ -20,33 +20,32 @@
            (merge old v)
            (hash-set v))))
 
-(defn ticket [line]
+(defn ticket [^String line]
   (let [register-type (subs line 0 2)
         date (str (subs line 2 6) "-" (subs line 6 8) "-" (subs line 8 10))
         bdi-code (subs line 10 12)
         ticket (string/trim (subs line 12 24))
         company-name (string/trim (subs line 27 39))
-        price-close (-> (subs line 108 121)
-                        string/trim
-                        (#(str (subs % 0 11) "." (subs % 11 13)))
-                        bigdec)]
+        price-close (Float/parseFloat (str (subs line 108 119) "." (subs line 119 121)))]
     {:ticket ticket
      :price-close price-close
      :date date}))
 
 (defn parse-file
-  [file]
+  [^String file]
   (with-open [f (clojure.java.io/reader file)]
     (let [lines (line-seq f)
           header (first lines)
           content (->> lines (drop 1) drop-last)]
-      (doall (pmap ticket content)))))
+      (doall (map ticket content)))))
 
 (defn filter-data
   [data {:keys [tickets dates]}]
-  (-> data
-      ((fn [d] (or (and tickets (filter #(get tickets (-> % :ticket string/lower-case keyword)) d)) d)))
-      ((fn [d] (or (and dates (filter #(get dates (-> % :date)) d)) d)))))
+  (if (or tickets dates)
+    (filter (fn [d]
+              (and (or (empty? tickets) (get tickets (-> d :ticket string/lower-case keyword)))
+                   (or (empty? dates) (get dates (-> d :date))))) data)
+    data))
 
 (defmulti output
   (fn [_ fmt] (or fmt :json)))
