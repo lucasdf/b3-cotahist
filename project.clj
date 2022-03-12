@@ -8,7 +8,8 @@
             :url "https://www.eclipse.org/legal/epl-2.0/"}
   :dependencies [[org.clojure/clojure "1.10.1"]
                  [org.clojure/tools.cli "1.0.194"]
-                 [org.clojure/data.json "1.0.0"]]
+                 [org.clojure/data.json "1.0.0"]
+                 [clj-http "3.12.3"]]
   :profiles {:dev {:dependencies [[criterium "0.4.6"]
                                   [com.taoensso/tufte "2.2.0"]]}}
   :jvm-opts ["-Xverify:none"]
