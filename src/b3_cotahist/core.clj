@@ -3,9 +3,9 @@
             [clojure.string :as string]
             [clojure.edn :as clojure.edn]
             [clojure.data.json :as json]
-            [clojure.java.io :as java.io])
-  (:import [java.time LocalDate]
-           [java.time.format DateTimeParseException])
+            [clojure.java.io :as java.io]
+            [clj-http.client :as client])
+  (:import [java.time LocalDate])
   (:gen-class))
 
 ;; helpers
@@ -53,9 +53,9 @@
   (json/write-str info :key-fn #(-> % name string/lower-case (string/replace #"-" "_"))))
 
 ;; historical quotes file download
-(def yearly-file "http://bvmf.bmfbovespa.com.br/InstDados/SerHist/COTAHIST_A{YYYY}.ZIP")
-(def monthly-file "http://bvmf.bmfbovespa.com.br/InstDados/SerHist/COTAHIST_M{MM}{YYYY}.ZIP")
-(def daily-file "http://bvmf.bmfbovespa.com.br/InstDados/SerHist/COTAHIST_D{DD}{MM}{YYYY}.ZIP")
+(def yearly-file "https://bvmf.bmfbovespa.com.br/InstDados/SerHist/COTAHIST_A{YYYY}.ZIP")
+(def monthly-file "https://bvmf.bmfbovespa.com.br/InstDados/SerHist/COTAHIST_M{MM}{YYYY}.ZIP")
+(def daily-file "https://bvmf.bmfbovespa.com.br/InstDados/SerHist/COTAHIST_D{DD}{MM}{YYYY}.ZIP")
 (defn replace-download-url [url args]
   (reduce
    (fn [url [k v]]
@@ -64,8 +64,9 @@
    (seq args)))
 
 (defn download-file [url]
-  (let [filename (string/replace (last (string/split url #"/")) #".ZIP" ".TXT")]
-    (with-open [in (java.util.zip.ZipInputStream. (java.io/input-stream url))
+  (let [filename (string/replace (last (string/split url #"/")) #".ZIP" ".TXT")
+        zip (client/get url {:insecure? true :as :stream})]
+    (with-open [in (java.util.zip.ZipInputStream. (:body zip))
                 out (java.io/output-stream filename)]
       (.getNextEntry in)
       (clojure.java.io/copy in out))))
